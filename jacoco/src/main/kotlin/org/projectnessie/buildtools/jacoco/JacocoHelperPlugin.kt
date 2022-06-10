@@ -75,7 +75,7 @@ class JacocoHelperPlugin : Plugin<Project> {
             val coverageDataElements = addJacocoConfigurations()
             coverageDataElements.configure {
               val jacocoFile = buildDir.resolve("jacoco-quarkus.exec")
-              outgoing.artifact(jacocoFile) { builtBy(tasks.named("test")) }
+              outgoing.artifact(jacocoFile) { builtBy(tasks.named("test"), tasks.named("intTest")) }
             }
           }
         }
