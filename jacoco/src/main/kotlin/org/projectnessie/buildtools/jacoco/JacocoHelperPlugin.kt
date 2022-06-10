@@ -94,9 +94,15 @@ class JacocoHelperPlugin : Plugin<Project> {
         attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("source-folders"))
       }
       val sourceSets = project.extensions.getByType<JavaPluginExtension>().sourceSets
-      val mainSourceSet = sourceSets.named("main").get()
+      val mainSourceSet = sourceSets.getByName("main")
       mainSourceSet.java.srcDirs.forEach {
         outgoing.artifact(it) { builtBy(tasks.named(mainSourceSet.classesTaskName)) }
+      }
+      val quarkusGeneratedSourceSet = sourceSets.findByName("quarkus-generated-sources")
+      if (quarkusGeneratedSourceSet != null) {
+        quarkusGeneratedSourceSet.java.srcDirs.forEach {
+          outgoing.artifact(it) { builtBy(tasks.named(quarkusGeneratedSourceSet.classesTaskName)) }
+        }
       }
     }
 
@@ -111,9 +117,15 @@ class JacocoHelperPlugin : Plugin<Project> {
         attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("class-folders"))
       }
       val sourceSets = project.extensions.getByType<JavaPluginExtension>().sourceSets
-      val mainSourceSet = sourceSets.named("main").get()
+      val mainSourceSet = sourceSets.getByName("main")
       outgoing.artifact(mainSourceSet.java.destinationDirectory) {
         builtBy(tasks.named(mainSourceSet.classesTaskName))
+      }
+      val quarkusGeneratedSourceSet = sourceSets.findByName("quarkus-generated-sources")
+      if (quarkusGeneratedSourceSet != null) {
+        outgoing.artifact(quarkusGeneratedSourceSet.java.destinationDirectory) {
+          builtBy(tasks.named(quarkusGeneratedSourceSet.classesTaskName))
+        }
       }
     }
 
