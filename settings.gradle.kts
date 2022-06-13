@@ -22,18 +22,45 @@ pluginManagement {
   // Cannot use a settings-script global variable/value, so pass the 'versions' Properties via
   // settings.extra around.
   val versions = java.util.Properties()
+  val pluginIdPattern =
+    java.util.regex.Pattern.compile("\\s*id\\(\"([^\"]+)\"\\) version \"([^\"]+)\"\\s*")
   settings.extra["nessieBuildTools.versions"] = versions
 
-  val versionIdeaExtPlugin = "1.1.4"
-  versions["versionIdeaExtPlugin"] = versionIdeaExtPlugin
-  val versionSpotlessPlugin = "6.7.0"
-  versions["versionSpotlessPlugin"] = versionSpotlessPlugin
-
   plugins {
-    id("com.gradle.plugin-publish") version "1.0.0-rc-2"
-    id("com.diffplug.spotless") version versionSpotlessPlugin
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-    id("org.jetbrains.gradle.plugin.idea-ext") version versionIdeaExtPlugin
+
+    // Note: this is NOT a real project but a hack for dependabot to manage the plugin versions.
+    //
+    // Background: dependabot only manages dependencies (incl Gradle plugins) in build.gradle[.kts]
+    // files. It scans the root build.gradle[.kts] fila and those in submodules referenced in
+    // settings.gradle[.kts].
+    // But dependabot does not manage managed plugin dependencies in settings.gradle[.kts].
+    // However, since dependabot is a "dumb search and replace engine", we can use a trick:
+    // 1. Have this "dummy" build.gradle.kts file with all managed plugin dependencies.
+    // 2. Add an `include()` to this build file in settings.gradle.kts, surrounded with an
+    //    `if (false)`, so Gradle does _not_ pick it up.
+    // 3. Parse this file in our settings.gradle.kts, provide a `ResolutionStrategy` to the
+    //    plugin dependencies.
+
+    val pulledVersions =
+      file("gradle/dependabot/build.gradle.kts")
+        .readLines()
+        .map { line -> pluginIdPattern.matcher(line) }
+        .filter { matcher -> matcher.matches() }
+        .associate { matcher -> matcher.group(1) to matcher.group(2) }
+
+    resolutionStrategy {
+      eachPlugin {
+        if (requested.version == null) {
+          val pluginId = requested.id.id
+          if (pulledVersions.containsKey(pluginId)) {
+            useVersion(pulledVersions[pluginId])
+          }
+        }
+      }
+    }
+
+    versions["versionIdeaExtPlugin"] = pulledVersions["org.jetbrains.gradle.plugin.idea-ext"]
+    versions["versionSpotlessPlugin"] = pulledVersions["com.diffplug.spotless"]
   }
 
   repositories {
@@ -72,5 +99,9 @@ include("reflection-config")
 include("smallrye-openapi")
 
 include("spotless")
+
+if (false) {
+  include("gradle:dependabot")
+}
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
