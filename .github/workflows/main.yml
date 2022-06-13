@@ -28,6 +28,14 @@ jobs:
         with:
           path: gradle-build-plugins
 
+      # Setup Gradle properties, heap requirements are for the "Integration test w/ Nessie".
+      - name: Setup gradle.properties
+        shell: bash
+        run: |
+          mkdir -p ~/.gradle
+          echo "org.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8" >> ~/.gradle/gradle.properties
+          echo "org.gradle.vfs.watch=false" >> ~/.gradle/gradle.properties
+
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v3
         with:
@@ -35,11 +43,10 @@ jobs:
           java-version: 11
 
       - name: Build with Gradle
-        # Java 8 and 16+ don't run spotless, because google-java-format requires Java 11+ (but doesn't run w/ Java 16)
         uses: gradle/gradle-build-action@v2
         with:
           build-root-directory: gradle-build-plugins
-          arguments: --no-watch-fs assemble check publishToMavenLocal
+          arguments: assemble check publishToMavenLocal
 
       - name: Clone Nessie for integration test
         uses: actions/checkout@v3
@@ -54,4 +61,4 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           build-root-directory: nessie
-          arguments: --no-watch-fs --include-build ../gradle-build-plugins jar testClasses publishToMavenLocal :servers:quarkus-cli:intTest
+          arguments: --include-build ../gradle-build-plugins jar testClasses publishToMavenLocal :servers:quarkus-cli:intTest
