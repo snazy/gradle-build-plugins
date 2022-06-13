@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: 'true'
+          path: gradle-build-plugins
 
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v3
@@ -38,4 +38,20 @@ jobs:
         # Java 8 and 16+ don't run spotless, because google-java-format requires Java 11+ (but doesn't run w/ Java 16)
         uses: gradle/gradle-build-action@v2
         with:
+          build-root-directory: gradle-build-plugins
           arguments: --no-watch-fs assemble check publishToMavenLocal
+
+      - name: Clone Nessie for integration test
+        uses: actions/checkout@v3
+        with:
+          repository: projectnessie/nessie
+          ref: main
+          path: nessie
+
+      # Build Nessie as an integration test.
+      # Use :servers:quarkus-cli:intTest as a canary, because that integration uses the Quarkus plugin.
+      - name: Integration test w/ Nessie
+        uses: gradle/gradle-build-action@v2
+        with:
+          build-root-directory: nessie
+          arguments: --no-watch-fs --include-build ../gradle-build-plugins jar testClasses publishToMavenLocal :servers:quarkus-cli:intTest
