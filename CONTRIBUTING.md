@@ -30,6 +30,22 @@ on the new feature or improvement.
 
 ## Code changes
 
+### Developing changes to the plugins
+
+There are no integration tests in all the plugins in this repository.
+
+To verify that changes to the plugins in this repository work, add an `includeBuild()` to for example
+the [Nessie's `settings.gradle.kts`](https://github.com/projectnessie/nessie) file like this above
+the `pluginManagement` section.
+
+```kotlin
+// Adjust the path in the includeBuild directive to point to your local clone of the
+// gradle-build-plugins repository.
+includeBuild("../../gradle-build-plugins/")
+
+pluginManagement {
+```
+
 ### Development process
 
 The development process doesn't contain many surprises. As most projects on github anyone can contribute by
