@@ -28,7 +28,7 @@
 //    plugin dependencies.
 
 plugins {
-  id("com.gradle.plugin-publish") version "1.0.0-rc-3"
+  id("com.gradle.plugin-publish") version "1.0.0"
   id("com.diffplug.spotless") version "6.7.2"
   id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
   id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.5"
