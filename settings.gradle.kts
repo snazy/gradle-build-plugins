@@ -103,5 +103,3 @@ include("spotless")
 if (false) {
   include("gradle:dependabot")
 }
-
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
