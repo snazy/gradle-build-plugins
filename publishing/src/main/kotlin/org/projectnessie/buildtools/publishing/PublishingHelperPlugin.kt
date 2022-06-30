@@ -64,121 +64,115 @@ class PublishingHelperPlugin : Plugin<Project> {
               suppressPomMetadataWarningsFor("testRuntimeElements")
               suppressPomMetadataWarningsFor("testSourcesElements")
 
-              // Must do all the following behind a project.afterEvaluate{}, because
-              // `mavenArtifactId()` requires the build.gradle.kts file to configure the
-              // `extra["maven.artifactId"]`-property.
-              afterEvaluate {
-                groupId = "$group"
-                artifactId = mavenArtifactId()
-                version = project.version.toString()
+              groupId = "$group"
+              version = project.version.toString()
 
-                tasks.named("generatePomFileForMavenPublication") {
-                  val e = project.extensions.getByType(PublishingHelperExtension::class.java)
+              tasks.named("generatePomFileForMavenPublication") {
+                val e = project.extensions.getByType(PublishingHelperExtension::class.java)
 
-                  pom {
-                    name.set(
-                      project.provider {
-                        if (project.extra.has("maven.name")) {
-                          project.extra["maven.name"].toString()
-                        } else {
-                          project.name
+                pom {
+                  name.set(
+                    project.provider {
+                      if (project.extra.has("maven.name")) {
+                        project.extra["maven.name"].toString()
+                      } else {
+                        project.name
+                      }
+                    }
+                  )
+                  description.set(project.description)
+                  if (project != rootProject) {
+                    withXml {
+                      val projectNode = asNode()
+
+                      val parentNode = projectNode.appendNode("parent")
+                      parentNode.appendNode("groupId", parent!!.group)
+                      parentNode.appendNode("artifactId", parent!!.name)
+                      parentNode.appendNode("version", parent!!.version)
+
+                      addMissingMandatoryDependencyVersions(projectNode)
+
+                      fixTestJarDependencyType(projectNode, components)
+                    }
+                  } else {
+                    val nessieRepoName = e.nessieRepoName.get()
+
+                    inputs
+                      .file(rootProject.file("gradle/developers.csv"))
+                      .withPathSensitivity(PathSensitivity.RELATIVE)
+                    inputs
+                      .file(rootProject.file("gradle/contributors.csv"))
+                      .withPathSensitivity(PathSensitivity.RELATIVE)
+                    doFirst {
+                      inceptionYear.set(e.inceptionYear.get())
+                      url.set("https://github.com/projectnessie/$nessieRepoName")
+                      organization {
+                        name.set("Project Nessie")
+                        url.set("https://projectnessie.org")
+                      }
+                      licenses {
+                        license {
+                          name.set("The Apache License, Version 2.0")
+                          url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
                         }
                       }
-                    )
-                    description.set(project.description)
-                    if (project != rootProject) {
-                      withXml {
-                        val projectNode = asNode()
-
-                        val parentNode = projectNode.appendNode("parent")
-                        parentNode.appendNode("groupId", parent!!.group)
-                        parentNode.appendNode("artifactId", parent!!.mavenArtifactId())
-                        parentNode.appendNode("version", parent!!.version)
-
-                        addMissingMandatoryDependencyVersions(projectNode)
-
-                        fixTestJarDependencyType(projectNode, components)
+                      mailingLists {
+                        mailingList {
+                          name.set("Project Nessie List")
+                          subscribe.set("projectnessie-subscribe@googlegroups.com")
+                          unsubscribe.set("projectnessie-unsubscribe@googlegroups.com")
+                          post.set("projectnessie@googlegroups.com")
+                          archive.set("https://groups.google.com/g/projectnessie")
+                        }
                       }
-                    } else {
-                      val nessieRepoName = e.nessieRepoName.get()
-
-                      inputs
-                        .file(rootProject.file("gradle/developers.csv"))
-                        .withPathSensitivity(PathSensitivity.RELATIVE)
-                      inputs
-                        .file(rootProject.file("gradle/contributors.csv"))
-                        .withPathSensitivity(PathSensitivity.RELATIVE)
-                      doFirst {
-                        inceptionYear.set(e.inceptionYear.get())
-                        url.set("https://github.com/projectnessie/$nessieRepoName")
-                        organization {
-                          name.set("Project Nessie")
-                          url.set("https://projectnessie.org")
-                        }
-                        licenses {
-                          license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                          }
-                        }
-                        mailingLists {
-                          mailingList {
-                            name.set("Project Nessie List")
-                            subscribe.set("projectnessie-subscribe@googlegroups.com")
-                            unsubscribe.set("projectnessie-unsubscribe@googlegroups.com")
-                            post.set("projectnessie@googlegroups.com")
-                            archive.set("https://groups.google.com/g/projectnessie")
-                          }
-                        }
-                        scm {
-                          connection.set("scm:git:https://github.com/projectnessie/$nessieRepoName")
-                          developerConnection.set(
-                            "scm:git:https://github.com/projectnessie/$nessieRepoName"
-                          )
-                          url.set("https://github.com/projectnessie/$nessieRepoName/tree/main")
-                          tag.set("main")
-                        }
-                        issueManagement {
-                          system.set("Github")
-                          url.set("https://github.com/projectnessie/$nessieRepoName/issues")
-                        }
-                        developers {
-                          file(rootProject.file("gradle/developers.csv"))
-                            .readLines()
-                            .map { line -> line.trim() }
-                            .filter { line -> line.isNotEmpty() && !line.startsWith("#") }
-                            .forEach { line ->
-                              val args = line.split(",")
-                              if (args.size < 3) {
-                                throw GradleException(
-                                  "gradle/developers.csv contains invalid line '${line}'"
-                                )
-                              }
-                              developer {
-                                id.set(args[0])
-                                name.set(args[1])
-                                url.set(args[2])
-                              }
+                      scm {
+                        connection.set("scm:git:https://github.com/projectnessie/$nessieRepoName")
+                        developerConnection.set(
+                          "scm:git:https://github.com/projectnessie/$nessieRepoName"
+                        )
+                        url.set("https://github.com/projectnessie/$nessieRepoName/tree/main")
+                        tag.set("main")
+                      }
+                      issueManagement {
+                        system.set("Github")
+                        url.set("https://github.com/projectnessie/$nessieRepoName/issues")
+                      }
+                      developers {
+                        file(rootProject.file("gradle/developers.csv"))
+                          .readLines()
+                          .map { line -> line.trim() }
+                          .filter { line -> line.isNotEmpty() && !line.startsWith("#") }
+                          .forEach { line ->
+                            val args = line.split(",")
+                            if (args.size < 3) {
+                              throw GradleException(
+                                "gradle/developers.csv contains invalid line '${line}'"
+                              )
                             }
-                        }
-                        contributors {
-                          file(rootProject.file("gradle/contributors.csv"))
-                            .readLines()
-                            .map { line -> line.trim() }
-                            .filter { line -> line.isNotEmpty() && !line.startsWith("#") }
-                            .forEach { line ->
-                              val args = line.split(",")
-                              if (args.size > 2) {
-                                throw GradleException(
-                                  "gradle/contributors.csv contains invalid line '${line}'"
-                                )
-                              }
-                              contributor {
-                                name.set(args[0])
-                                url.set(args[1])
-                              }
+                            developer {
+                              id.set(args[0])
+                              name.set(args[1])
+                              url.set(args[2])
                             }
-                        }
+                          }
+                      }
+                      contributors {
+                        file(rootProject.file("gradle/contributors.csv"))
+                          .readLines()
+                          .map { line -> line.trim() }
+                          .filter { line -> line.isNotEmpty() && !line.startsWith("#") }
+                          .forEach { line ->
+                            val args = line.split(",")
+                            if (args.size > 2) {
+                              throw GradleException(
+                                "gradle/contributors.csv contains invalid line '${line}'"
+                              )
+                            }
+                            contributor {
+                              name.set(args[0])
+                              url.set(args[1])
+                            }
+                          }
                       }
                     }
                   }
@@ -295,8 +289,7 @@ class PublishingHelperPlugin : Plugin<Project> {
                 dependency as Node
                 val depGroup = xmlNode(dependency, "groupId")!!.text()
                 val depArtifact = xmlNode(dependency, "artifactId")!!.text()
-                depGroup == depPrj.group &&
-                  depArtifact == depPrj.dependencyProject.mavenArtifactId()
+                depGroup == depPrj.group && depArtifact == depPrj.name
               } as Node?
             if (dependency != null) {
               if ((dependency["type"] as NodeList).isEmpty()) {
@@ -317,25 +310,6 @@ class PublishingHelperPlugin : Plugin<Project> {
       }
     }
     return null
-  }
-
-  private fun Project.mavenArtifactId(): String {
-    if (extra.has("maven.artifactId")) {
-      return extra["maven.artifactId"] as String
-    }
-
-    var n = name
-    var prj = this
-    if (prj != rootProject) {
-      while (true) {
-        prj = prj.parent!!
-        n = "${prj.name}-$n"
-        if (prj.parent == null) {
-          break
-        }
-      }
-    }
-    return n
   }
 
   private fun Project.dependencyVersion(key: String) = rootProject.extra[key].toString()
