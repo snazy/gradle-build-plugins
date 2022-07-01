@@ -61,4 +61,4 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           build-root-directory: nessie
-          arguments: --include-build ../gradle-build-plugins jar testClasses publishToMavenLocal :servers:quarkus-cli:intTest
+          arguments: --include-build ../gradle-build-plugins jar testClasses publishToMavenLocal :nessie-quarkus-cli:intTest
