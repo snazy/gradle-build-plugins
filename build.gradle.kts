@@ -125,7 +125,8 @@ allprojects {
         val mavenPublication = this
 
         if (project.hasProperty("release")) {
-          if (mavenPublication.name != "pluginMaven" &&
+          if (
+            mavenPublication.name != "pluginMaven" &&
               !mavenPublication.name.endsWith("PluginMarkerMaven")
           ) {
             System.err.println("$project   ${mavenPublication.name}")

@@ -150,7 +150,8 @@ open class ReflectionConfigTask : DefaultTask() {
         ClassReader.SKIP_CODE + ClassReader.SKIP_FRAMES + ClassReader.SKIP_DEBUG
       )
 
-    if (classVisitor.extends != null &&
+    if (
+      classVisitor.extends != null &&
         (matchesPattern(classVisitor.extends!!, extPats) ||
           matchesPattern(classVisitor.implements, implPats))
     ) {
