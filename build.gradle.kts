@@ -35,7 +35,7 @@ val versionJandexPlugin = "1.82"
 val versionProtobufPlugin = "0.8.19"
 val versionQuarkus = "2.10.3.Final"
 val versionShadowPlugin = "7.1.2"
-val versionSmallryeOpenApi = "2.1.22"
+val versionSmallryeOpenApi = "2.1.23"
 val versionSpotlessPlugin = dependencyVersion("versionSpotlessPlugin")
 
 rootProject.extra["versionAsm"] = versionAsm
