@@ -56,6 +56,12 @@ class PublishingHelperPlugin : Plugin<Project> {
               val shadowExtension = project.extensions.findByType(ShadowExtension::class.java)
               if (shadowExtension != null) {
                 shadowExtension.component(this)
+                project.afterEvaluate {
+                  // Sonatype requires the javadoc and sources jar to be present, but the
+                  // Shadow extension does not publish those.
+                  artifact(tasks.named("javadocJar"))
+                  artifact(tasks.named("sourcesJar"))
+                }
               } else {
                 from(components.firstOrNull { c -> c.name == "javaPlatform" || c.name == "java" })
               }
