@@ -39,7 +39,6 @@ class ErrorproneHelperPlugin : Plugin<Project> {
     project.run {
       apply<ErrorPronePlugin>()
       tasks.withType<JavaCompile>().configureEach {
-        options.errorprone.allErrorsAsWarnings.set(true)
         options.errorprone.disableWarningsInGeneratedCode.set(true)
 
         val errorproneRules =
