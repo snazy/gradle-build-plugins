@@ -23,12 +23,8 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.artifacts.result.DependencyResult
-import org.gradle.api.component.SoftwareComponentContainer
-import org.gradle.api.internal.artifacts.dependencies.DefaultProjectDependencyConstraint
-import org.gradle.api.internal.component.SoftwareComponentInternal
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
@@ -97,8 +93,6 @@ class PublishingHelperPlugin : Plugin<Project> {
                       parentNode.appendNode("version", parent!!.version)
 
                       addMissingMandatoryDependencyVersions(projectNode)
-
-                      fixTestJarDependencyType(projectNode, components)
                     }
                   } else {
                     val nessieRepoName = e.nessieRepoName.get()
@@ -253,61 +247,6 @@ class PublishingHelperPlugin : Plugin<Project> {
     return null
   }
 
-  /**
-   * We need the "test-jar"-type artifacts in the Maven poms, but Gradle supports no way to "mimic"
-   * that Maven behavior.
-   *
-   * The `AttachTestJarPlugin` registers a Gradle feature "tests", which is properly respected by
-   * the Gradle module metadata via the project dependencies with the required capabilities to the
-   * "tests" feature.
-   *
-   * This function maps project dependencies to a "-tests" requested capability to the Maven
-   * `<type>test-jar</type>` dependency notion.
-   */
-  private fun fixTestJarDependencyType(projectNode: Node, components: SoftwareComponentContainer) {
-    val softwareComponent =
-      components.firstOrNull { c -> c.name == "javaPlatform" || c.name == "java" }
-    if (softwareComponent is SoftwareComponentInternal) {
-      fixTestJarDependencyType(softwareComponent, xmlNode(projectNode, "dependencies"))
-      fixTestJarDependencyType(
-        softwareComponent,
-        xmlNode(xmlNode(projectNode, "dependencyManagement"), "dependencies")
-      )
-    }
-  }
-
-  private fun fixTestJarDependencyType(
-    softwareComponent: SoftwareComponentInternal,
-    dependencies: Node?
-  ) {
-    if (dependencies != null) {
-      softwareComponent.usages.forEach { usage ->
-        val fromDependencyConstraints =
-          usage.dependencyConstraints.filterIsInstance<DefaultProjectDependencyConstraint>().map {
-            it.projectDependency
-          }
-        val fromDependencies = usage.dependencies.filterIsInstance<ProjectDependency>()
-        (fromDependencyConstraints + fromDependencies).forEach { depPrj ->
-          val capability = depPrj.requestedCapabilities.find { c -> c.name.endsWith("-tests") }
-          if (capability != null) {
-            val dependency =
-              dependencies.children().firstOrNull { dependency ->
-                dependency as Node
-                val depGroup = xmlNode(dependency, "groupId")!!.text()
-                val depArtifact = xmlNode(dependency, "artifactId")!!.text()
-                depGroup == depPrj.group && depArtifact == depPrj.name
-              } as Node?
-            if (dependency != null) {
-              if ((dependency["type"] as NodeList).isEmpty()) {
-                dependency.appendNode("type", "test-jar")
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
   private fun xmlNode(node: Node?, child: String): Node? {
     val found = node?.get(child)
     if (found is NodeList) {
@@ -317,6 +256,4 @@ class PublishingHelperPlugin : Plugin<Project> {
     }
     return null
   }
-
-  private fun Project.dependencyVersion(key: String) = rootProject.extra[key].toString()
 }

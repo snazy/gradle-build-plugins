@@ -78,8 +78,6 @@ gradle.rootProject {
   versions.forEach { k, v -> prj.extra[k.toString()] = v }
 }
 
-include("attach-test-jar")
-
 include("errorprone")
 
 include("checkstyle")
