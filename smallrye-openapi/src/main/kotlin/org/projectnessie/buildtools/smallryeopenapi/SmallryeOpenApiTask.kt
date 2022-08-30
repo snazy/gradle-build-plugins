@@ -22,10 +22,14 @@ import io.smallrye.openapi.api.constants.OpenApiConstants
 import io.smallrye.openapi.runtime.OpenApiProcessor
 import io.smallrye.openapi.runtime.OpenApiStaticFile
 import io.smallrye.openapi.runtime.io.Format
+import io.smallrye.openapi.runtime.io.OpenApiParser
 import io.smallrye.openapi.runtime.io.OpenApiSerializer
 import io.smallrye.openapi.runtime.scanner.OpenApiAnnotationScanner
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.io.OutputStreamWriter
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLClassLoader
@@ -45,6 +49,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.Optional
+import org.gradle.internal.impldep.org.yaml.snakeyaml.Yaml
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.jboss.jandex.IndexView
@@ -150,8 +155,24 @@ constructor(
         .orElse(null)
     if (staticFile != null) {
       Files.newInputStream(staticFile).use { `is` ->
-        OpenApiStaticFile(`is`, getFormat(staticFile)).use { openApiStaticFile ->
-          return OpenApiProcessor.modelFromStaticFile(openApiStaticFile)
+        val format = getFormat(staticFile)
+        if (format == Format.YAML) {
+          // OpenApiProcessor uses Jackson, which does not appear to support YAML anchors
+          // cf. https://github.com/OpenAPITools/openapi-generator/issues/1593
+          // cf. https://github.com/FasterXML/jackson-dataformats-text/issues/98
+          // So, we use Snakeyaml for pre-processing the model definition in order
+          // to resolve anchors and overrides.
+          val yamlParser = Yaml()
+          val modelYaml: Any = yamlParser.load(`is`)
+          val preProcessesApiDef = ByteArrayOutputStream()
+          OutputStreamWriter(preProcessesApiDef).use { os -> yamlParser.dump(modelYaml, os) }
+          ByteArrayInputStream(preProcessesApiDef.toByteArray()).use { bytes ->
+            return OpenApiParser.parse(bytes, format)
+          }
+        } else {
+          OpenApiStaticFile(`is`, format).use { openApiStaticFile ->
+            return OpenApiProcessor.modelFromStaticFile(openApiStaticFile)
+          }
         }
       }
     }
