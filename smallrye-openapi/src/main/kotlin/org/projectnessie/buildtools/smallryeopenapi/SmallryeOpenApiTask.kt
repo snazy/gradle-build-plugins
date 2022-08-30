@@ -49,7 +49,11 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.Optional
+import org.gradle.internal.impldep.org.yaml.snakeyaml.DumperOptions
 import org.gradle.internal.impldep.org.yaml.snakeyaml.Yaml
+import org.gradle.internal.impldep.org.yaml.snakeyaml.nodes.Node
+import org.gradle.internal.impldep.org.yaml.snakeyaml.nodes.Tag
+import org.gradle.internal.impldep.org.yaml.snakeyaml.representer.Representer
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.jboss.jandex.IndexView
@@ -162,7 +166,29 @@ constructor(
           // cf. https://github.com/FasterXML/jackson-dataformats-text/issues/98
           // So, we use Snakeyaml for pre-processing the model definition in order
           // to resolve anchors and overrides.
-          val yamlParser = Yaml()
+          val representer =
+            object : Representer() {
+              override fun representMapping(
+                tag: Tag?,
+                mapping: MutableMap<*, *>?,
+                flowStyle: DumperOptions.FlowStyle?
+              ): Node {
+                // Clear representedObjects to prevent auto-generated anchors in the output.
+                // Assume the object tree does not have cycles.
+                representedObjects.clear()
+                return super.representMapping(tag, mapping, flowStyle)
+              }
+
+              override fun representSequence(
+                tag: Tag?,
+                sequence: MutableIterable<*>?,
+                flowStyle: DumperOptions.FlowStyle?
+              ): Node {
+                representedObjects.clear() // see comment above
+                return super.representSequence(tag, sequence, flowStyle)
+              }
+            }
+          val yamlParser = Yaml(representer)
           val modelYaml: Any = yamlParser.load(`is`)
           val preProcessesApiDef = ByteArrayOutputStream()
           OutputStreamWriter(preProcessesApiDef).use { os -> yamlParser.dump(modelYaml, os) }
