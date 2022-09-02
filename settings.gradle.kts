@@ -78,25 +78,20 @@ gradle.rootProject {
   versions.forEach { k, v -> prj.extra[k.toString()] = v }
 }
 
-include("errorprone")
-
-include("checkstyle")
-
-include("ide-integration")
-
-include("publishing")
-
-include("jandex")
-
-include("jacoco")
-
-include("protobuf")
-
-include("reflection-config")
-
-include("smallrye-openapi")
-
-include("spotless")
+listOf(
+    "errorprone",
+    "checkstyle",
+    "ide-integration",
+    "publishing",
+    "jandex",
+    "jacoco",
+    "protobuf",
+    "reflection-config",
+    "smallrye-openapi",
+    "spotless",
+    "dependency-declarations"
+  )
+  .forEach { include(it) }
 
 if (false) {
   include("gradle:dependabot")

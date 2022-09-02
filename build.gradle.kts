@@ -38,21 +38,17 @@ val versionShadowPlugin = "7.1.2"
 val versionSmallryeOpenApi = "2.1.23"
 val versionSpotlessPlugin = dependencyVersion("versionSpotlessPlugin")
 
-rootProject.extra["versionAsm"] = versionAsm
-
-rootProject.extra["versionErrorPronePlugin"] = versionErrorPronePlugin
-
-rootProject.extra["versionJandex"] = versionJandex
-
-rootProject.extra["versionJandexPlugin"] = versionJandexPlugin
-
-rootProject.extra["versionProtobufPlugin"] = versionProtobufPlugin
-
-rootProject.extra["versionQuarkus"] = versionQuarkus
-
-rootProject.extra["versionShadowPlugin"] = versionShadowPlugin
-
-rootProject.extra["versionSmallryeOpenApi"] = versionSmallryeOpenApi
+mapOf(
+    "versionAsm" to versionAsm,
+    "versionErrorPronePlugin" to versionErrorPronePlugin,
+    "versionJandex" to versionJandex,
+    "versionJandexPlugin" to versionJandexPlugin,
+    "versionProtobufPlugin" to versionProtobufPlugin,
+    "versionQuarkus" to versionQuarkus,
+    "versionShadowPlugin" to versionShadowPlugin,
+    "versionSmallryeOpenApi" to versionSmallryeOpenApi
+  )
+  .forEach { (k, v) -> rootProject.extra[k] = v }
 
 dependencies {
   constraints {
@@ -62,13 +58,22 @@ dependencies {
     api("gradle.plugin.com.github.johnrengelman:shadow:$versionShadowPlugin")
     api("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext:$versionIdeaExtPlugin")
     api("io.quarkus:gradle-application-plugin:$versionQuarkus")
-    api("io.smallrye:smallrye-open-api-core:$versionSmallryeOpenApi")
-    api("io.smallrye:smallrye-open-api-jaxrs:$versionSmallryeOpenApi")
-    api("io.smallrye:smallrye-open-api-spring:$versionSmallryeOpenApi")
-    api("io.smallrye:smallrye-open-api-vertx:$versionSmallryeOpenApi")
     api("net.ltgt.gradle:gradle-errorprone-plugin:$versionErrorPronePlugin")
-    api("org.ow2.asm:asm:$versionAsm")
     api("org.jboss:jandex:$versionJandex")
+  }
+}
+
+project(":dependency-declarations") {
+  this.buildDir = file(rootProject.buildDir.resolve("dependency-declarations"))
+  apply { plugin("java-platform") }
+  dependencies {
+    constraints {
+      api("org.ow2.asm:asm:$versionAsm")
+      api("io.smallrye:smallrye-open-api-core:$versionSmallryeOpenApi")
+      api("io.smallrye:smallrye-open-api-jaxrs:$versionSmallryeOpenApi")
+      api("io.smallrye:smallrye-open-api-spring:$versionSmallryeOpenApi")
+      api("io.smallrye:smallrye-open-api-vertx:$versionSmallryeOpenApi")
+    }
   }
 }
 
@@ -78,135 +83,138 @@ allprojects {
   group = "org.projectnessie.buildsupport"
   version = projectVersion
 
-  repositories {
-    gradlePluginPortal()
-    mavenCentral()
-    if (java.lang.Boolean.getBoolean("withMavenLocal")) {
-      mavenLocal()
-    }
-  }
+  if (project.path != ":dependency-declarations") {
 
-  apply<MavenPublishPlugin>()
-
-  tasks.withType<JavaCompile>().configureEach {
-    targetCompatibility = JavaVersion.VERSION_11.toString()
-  }
-
-  apply<SpotlessPlugin>()
-  plugins.withType<SpotlessPlugin>().configureEach {
-    configure<SpotlessExtension> {
-      kotlinGradle {
-        ktfmt().googleStyle()
-        licenseHeaderFile(rootProject.file("codestyle/copyright-header-java.txt"), "$")
+    repositories {
+      gradlePluginPortal()
+      mavenCentral()
+      if (java.lang.Boolean.getBoolean("withMavenLocal")) {
+        mavenLocal()
       }
-      if (project != rootProject) {
-        kotlin {
+    }
+
+    apply<MavenPublishPlugin>()
+
+    tasks.withType<JavaCompile>().configureEach {
+      targetCompatibility = JavaVersion.VERSION_11.toString()
+    }
+
+    apply<SpotlessPlugin>()
+    plugins.withType<SpotlessPlugin>().configureEach {
+      configure<SpotlessExtension> {
+        kotlinGradle {
           ktfmt().googleStyle()
           licenseHeaderFile(rootProject.file("codestyle/copyright-header-java.txt"), "$")
         }
-      }
-    }
-  }
-
-  if (project.hasProperty("release")) {
-    apply<SigningPlugin>()
-    plugins.withType<SigningPlugin>().configureEach {
-      configure<SigningExtension> {
-        val signingKey: String? by project
-        val signingPassword: String? by project
-        useInMemoryPgpKeys(signingKey, signingPassword)
-      }
-    }
-  }
-
-  configure<PublishingExtension> {
-    publications {
-      withType(MavenPublication::class.java).configureEach {
-        val mavenPublication = this
-
-        if (project.hasProperty("release")) {
-          if (
-            mavenPublication.name != "pluginMaven" &&
-              !mavenPublication.name.endsWith("PluginMarkerMaven")
-          ) {
-            System.err.println("$project   ${mavenPublication.name}")
-            configure<SigningExtension> { sign(mavenPublication) }
+        if (project != rootProject) {
+          kotlin {
+            ktfmt().googleStyle()
+            licenseHeaderFile(rootProject.file("codestyle/copyright-header-java.txt"), "$")
           }
         }
+      }
+    }
 
-        pom {
-          val nessieRepoName = "gradle-build-plugins"
+    if (project.hasProperty("release")) {
+      apply<SigningPlugin>()
+      plugins.withType<SigningPlugin>().configureEach {
+        configure<SigningExtension> {
+          val signingKey: String? by project
+          val signingPassword: String? by project
+          useInMemoryPgpKeys(signingKey, signingPassword)
+        }
+      }
+    }
 
-          if (mavenPublication.name == "pluginMaven") {
-            val pluginBundle =
-              project.extensions.getByType<com.gradle.publish.PluginBundleExtension>()
-            name.set(project.name)
-            description.set(pluginBundle.description)
-          }
+    configure<PublishingExtension> {
+      publications {
+        withType(MavenPublication::class.java).configureEach {
+          val mavenPublication = this
 
-          inceptionYear.set("2022")
-          url.set("https://github.com/projectnessie/$nessieRepoName")
-          organization {
-            name.set("Project Nessie")
-            url.set("https://projectnessie.org")
-          }
-          licenses {
-            license {
-              name.set("The Apache License, Version 2.0")
-              url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+          if (project.hasProperty("release")) {
+            if (
+              mavenPublication.name != "pluginMaven" &&
+                !mavenPublication.name.endsWith("PluginMarkerMaven")
+            ) {
+              System.err.println("$project   ${mavenPublication.name}")
+              configure<SigningExtension> { sign(mavenPublication) }
             }
           }
-          mailingLists {
-            mailingList {
-              name.set("Project Nessie List")
-              subscribe.set("projectnessie-subscribe@googlegroups.com")
-              unsubscribe.set("projectnessie-unsubscribe@googlegroups.com")
-              post.set("projectnessie@googlegroups.com")
-              archive.set("https://groups.google.com/g/projectnessie")
+
+          pom {
+            val nessieRepoName = "gradle-build-plugins"
+
+            if (mavenPublication.name == "pluginMaven") {
+              val pluginBundle =
+                project.extensions.getByType<com.gradle.publish.PluginBundleExtension>()
+              name.set(project.name)
+              description.set(pluginBundle.description)
             }
-          }
-          scm {
-            connection.set("scm:git:https://github.com/projectnessie/$nessieRepoName")
-            developerConnection.set("scm:git:https://github.com/projectnessie/$nessieRepoName")
-            url.set("https://github.com/projectnessie/$nessieRepoName/tree/main")
-            tag.set("main")
-          }
-          issueManagement {
-            system.set("Github")
-            url.set("https://github.com/projectnessie/$nessieRepoName/issues")
-          }
-          developers {
-            file(rootProject.file("gradle/developers.csv"))
-              .readLines()
-              .map { line -> line.trim() }
-              .filter { line -> line.isNotEmpty() && !line.startsWith("#") }
-              .forEach { line ->
-                val args = line.split(",")
-                if (args.size < 3) {
-                  throw GradleException("gradle/developers.csv contains invalid line '${line}'")
-                }
-                developer {
-                  id.set(args[0])
-                  name.set(args[1])
-                  url.set(args[2])
-                }
+
+            inceptionYear.set("2022")
+            url.set("https://github.com/projectnessie/$nessieRepoName")
+            organization {
+              name.set("Project Nessie")
+              url.set("https://projectnessie.org")
+            }
+            licenses {
+              license {
+                name.set("The Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
               }
-          }
-          contributors {
-            file(rootProject.file("gradle/contributors.csv"))
-              .readLines()
-              .map { line -> line.trim() }
-              .filter { line -> line.isNotEmpty() && !line.startsWith("#") }
-              .forEach { line ->
-                val args = line.split(",")
-                if (args.size > 2) {
-                  throw GradleException("gradle/contributors.csv contains invalid line '${line}'")
-                }
-                contributor {
-                  name.set(args[0])
-                  url.set(args[1])
-                }
+            }
+            mailingLists {
+              mailingList {
+                name.set("Project Nessie List")
+                subscribe.set("projectnessie-subscribe@googlegroups.com")
+                unsubscribe.set("projectnessie-unsubscribe@googlegroups.com")
+                post.set("projectnessie@googlegroups.com")
+                archive.set("https://groups.google.com/g/projectnessie")
               }
+            }
+            scm {
+              connection.set("scm:git:https://github.com/projectnessie/$nessieRepoName")
+              developerConnection.set("scm:git:https://github.com/projectnessie/$nessieRepoName")
+              url.set("https://github.com/projectnessie/$nessieRepoName/tree/main")
+              tag.set("main")
+            }
+            issueManagement {
+              system.set("Github")
+              url.set("https://github.com/projectnessie/$nessieRepoName/issues")
+            }
+            developers {
+              file(rootProject.file("gradle/developers.csv"))
+                .readLines()
+                .map { line -> line.trim() }
+                .filter { line -> line.isNotEmpty() && !line.startsWith("#") }
+                .forEach { line ->
+                  val args = line.split(",")
+                  if (args.size < 3) {
+                    throw GradleException("gradle/developers.csv contains invalid line '${line}'")
+                  }
+                  developer {
+                    id.set(args[0])
+                    name.set(args[1])
+                    url.set(args[2])
+                  }
+                }
+            }
+            contributors {
+              file(rootProject.file("gradle/contributors.csv"))
+                .readLines()
+                .map { line -> line.trim() }
+                .filter { line -> line.isNotEmpty() && !line.startsWith("#") }
+                .forEach { line ->
+                  val args = line.split(",")
+                  if (args.size > 2) {
+                    throw GradleException("gradle/contributors.csv contains invalid line '${line}'")
+                  }
+                  contributor {
+                    name.set(args[0])
+                    url.set(args[1])
+                  }
+                }
+            }
           }
         }
       }
