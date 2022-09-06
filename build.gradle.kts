@@ -35,7 +35,7 @@ val versionJandexPlugin = "1.82"
 val versionProtobufPlugin = "0.8.19"
 val versionQuarkus = "2.12.0.Final"
 val versionShadowPlugin = "7.1.2"
-val versionSmallryeOpenApi = "2.1.23"
+val versionSmallryeOpenApi = "3.0.0"
 val versionSpotlessPlugin = dependencyVersion("versionSpotlessPlugin")
 
 mapOf(
