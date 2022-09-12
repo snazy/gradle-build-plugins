@@ -16,7 +16,6 @@
 
 package org.projectnessie.buildtools.jacoco
 
-import io.quarkus.gradle.QuarkusPlugin
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -71,7 +70,7 @@ class JacocoHelperPlugin : Plugin<Project> {
             }
           }
 
-          plugins.withType<QuarkusPlugin>().configureEach {
+          plugins.withId("io.gatling") {
             val coverageDataElements = addJacocoConfigurations()
             coverageDataElements.configure {
               val jacocoFile = buildDir.resolve("jacoco-quarkus.exec")

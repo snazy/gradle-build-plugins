@@ -33,7 +33,6 @@ val versionIdeaExtPlugin = dependencyVersion("versionIdeaExtPlugin")
 val versionJandex = "2.4.3.Final"
 val versionJandexPlugin = "1.82"
 val versionProtobufPlugin = "0.8.19"
-val versionQuarkus = "2.12.1.Final"
 val versionShadowPlugin = "7.1.2"
 val versionSmallryeOpenApi = "2.1.23"
 val versionSpotlessPlugin = dependencyVersion("versionSpotlessPlugin")
@@ -44,7 +43,6 @@ mapOf(
     "versionJandex" to versionJandex,
     "versionJandexPlugin" to versionJandexPlugin,
     "versionProtobufPlugin" to versionProtobufPlugin,
-    "versionQuarkus" to versionQuarkus,
     "versionShadowPlugin" to versionShadowPlugin,
     "versionSmallryeOpenApi" to versionSmallryeOpenApi
   )
@@ -57,7 +55,6 @@ dependencies {
     api("com.google.protobuf:protobuf-gradle-plugin:$versionProtobufPlugin")
     api("gradle.plugin.com.github.johnrengelman:shadow:$versionShadowPlugin")
     api("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext:$versionIdeaExtPlugin")
-    api("io.quarkus:gradle-application-plugin:$versionQuarkus")
     api("net.ltgt.gradle:gradle-errorprone-plugin:$versionErrorPronePlugin")
     api("org.jboss:jandex:$versionJandex")
   }

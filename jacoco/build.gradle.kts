@@ -19,10 +19,6 @@ plugins {
   id("com.gradle.plugin-publish")
 }
 
-dependencies {
-  implementation("io.quarkus:gradle-application-plugin:${dependencyVersion("versionQuarkus")}")
-}
-
 gradlePlugin {
   plugins {
     create("jacoco") {

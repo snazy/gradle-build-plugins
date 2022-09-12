@@ -16,7 +16,6 @@
 
 package org.projectnessie.buildtools.checkstyle
 
-import io.quarkus.gradle.QuarkusPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.quality.Checkstyle
@@ -52,7 +51,7 @@ class CheckstyleHelperPlugin : Plugin<Project> {
             "checkstyleTest" -> dependsOn(tasks.named("processTestJandexIndex"))
             else -> {}
           }
-          if (plugins.findPlugin(QuarkusPlugin::class.java) != null) {
+          if (plugins.hasPlugin("io.quarkus")) {
             when (name) {
               "checkstyleMain" -> dependsOn(tasks.named("compileQuarkusGeneratedSourcesJava"))
               "checkstyleTest" -> dependsOn(tasks.named("compileQuarkusTestGeneratedSourcesJava"))
