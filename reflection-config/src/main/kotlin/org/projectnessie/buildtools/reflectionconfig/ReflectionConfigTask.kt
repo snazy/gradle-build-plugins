@@ -122,7 +122,8 @@ open class ReflectionConfigTask : DefaultTask() {
               |    "allPublicMethods" : true,
               |    "allDeclaredFields" : true,
               |    "allPublicFields" : true
-              |  }""".trimMargin()
+              |  }""".trimMargin(
+          )
         }
       )
   }
