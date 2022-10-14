@@ -28,7 +28,7 @@ buildscript { dependencies { classpath("com.gradle.publish:plugin-publish-plugin
 val projectVersion = file("version.txt").readText().trim()
 
 val versionAsm = "9.4"
-val versionErrorPronePlugin = "2.0.2"
+val versionErrorPronePlugin = "3.0.1"
 val versionIdeaExtPlugin = dependencyVersion("versionIdeaExtPlugin")
 val versionJandex = "2.4.3.Final"
 val versionJandexPlugin = "1.82"
