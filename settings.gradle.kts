@@ -59,7 +59,6 @@ listOf(
     "publishing",
     "jandex",
     "jacoco",
-    "protobuf",
     "reflection-config",
     "smallrye-openapi",
     "spotless",
