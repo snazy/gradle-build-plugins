@@ -23,7 +23,7 @@ plugins {
   id("io.github.gradle-nexus.publish-plugin")
 }
 
-buildscript { dependencies { classpath("com.gradle.publish:plugin-publish-plugin:1.0.0") } }
+buildscript { dependencies { classpath("com.gradle.publish:plugin-publish-plugin:1.1.0") } }
 
 val projectVersion = file("version.txt").readText().trim()
 
