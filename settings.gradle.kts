@@ -28,7 +28,7 @@ pluginManagement {
   settings.extra["nessieBuildTools.versions"] = versions
 
   plugins {
-    id("com.gradle.plugin-publish") version "1.0.0"
+    id("com.gradle.plugin-publish") version "1.1.0"
     id("com.diffplug.spotless") version versionSpotlessPlugin
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.gradle.plugin.idea-ext") version versionIdeaExtPlugin
