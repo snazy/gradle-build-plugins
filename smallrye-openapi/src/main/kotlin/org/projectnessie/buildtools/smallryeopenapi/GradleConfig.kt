@@ -18,10 +18,9 @@ package org.projectnessie.buildtools.smallryeopenapi
 
 import io.smallrye.openapi.api.OpenApiConfig
 import io.smallrye.openapi.api.constants.OpenApiConstants
-import java.util.regex.Pattern
 import org.eclipse.microprofile.openapi.OASConfig
 
-class GradleConfig(val properties: Map<String, String>) : OpenApiConfig {
+class GradleConfig(private val properties: Map<String, String>) : OpenApiConfig {
 
   override fun modelReader(): String? {
     return properties[OASConfig.MODEL_READER]
@@ -35,32 +34,32 @@ class GradleConfig(val properties: Map<String, String>) : OpenApiConfig {
     return java.lang.Boolean.parseBoolean(properties[OASConfig.FILTER])
   }
 
-  override fun scanPackages(): Pattern? {
-    return patternOf(properties[OASConfig.SCAN_PACKAGES])
+  override fun scanPackages(): Set<String?> {
+    return asCsvSet(properties[OASConfig.SCAN_PACKAGES])
   }
 
-  override fun scanClasses(): Pattern? {
-    return patternOf(properties[OASConfig.SCAN_CLASSES])
+  override fun scanClasses(): Set<String?> {
+    return asCsvSet(properties[OASConfig.SCAN_CLASSES])
   }
 
-  override fun scanExcludePackages(): Pattern? {
-    return patternOf(properties[OASConfig.SCAN_EXCLUDE_PACKAGES])
+  override fun scanExcludePackages(): Set<String?> {
+    return asCsvSet(properties[OASConfig.SCAN_EXCLUDE_PACKAGES])
   }
 
-  override fun scanExcludeClasses(): Pattern? {
-    return patternOf(properties[OASConfig.SCAN_EXCLUDE_CLASSES])
+  override fun scanExcludeClasses(): Set<String?> {
+    return asCsvSet(properties[OASConfig.SCAN_EXCLUDE_CLASSES])
   }
 
-  override fun servers(): Set<String?>? {
-    return asCsvSet(properties[OASConfig.SERVERS])
+  override fun servers(): List<String?>? {
+    return asCsvList(properties[OASConfig.SERVERS])
   }
 
-  override fun pathServers(path: String): Set<String?>? {
-    return asCsvSet(properties[OASConfig.SERVERS_PATH_PREFIX + path])
+  override fun pathServers(path: String): List<String?>? {
+    return asCsvList(properties[OASConfig.SERVERS_PATH_PREFIX + path])
   }
 
-  override fun operationServers(operationId: String): Set<String?>? {
-    return asCsvSet(properties[OASConfig.SERVERS_OPERATION_PREFIX + operationId])
+  override fun operationServers(operationId: String): List<String?>? {
+    return asCsvList(properties[OASConfig.SERVERS_OPERATION_PREFIX + operationId])
   }
 
   override fun scanDependenciesDisable(): Boolean {
