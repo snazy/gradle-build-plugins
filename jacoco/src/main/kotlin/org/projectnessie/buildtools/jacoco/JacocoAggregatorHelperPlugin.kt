@@ -28,6 +28,7 @@ import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.project
 import org.gradle.kotlin.dsl.withType
+import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
 /** Applies common configurations to all Nessie projects. */
@@ -95,7 +96,9 @@ class JacocoAggregatorHelperPlugin : Plugin<Project> {
         rootProject.allprojects {
           val prj = this
           tasks.withType<Test> {
-            if (plugins.hasPlugin(JavaLibraryPlugin::class)) {
+            if (
+              plugins.hasPlugin(JavaLibraryPlugin::class) && plugins.hasPlugin(JacocoPlugin::class)
+            ) {
               deps.add(coverageDataPath.name, deps.project(prj.path, "coverageDataElements"))
               deps.add(sourcesPath.name, deps.project(prj.path, "transitiveSourcesElements"))
               deps.add(classesPath.name, deps.project(prj.path, "transitiveClassesElements"))
