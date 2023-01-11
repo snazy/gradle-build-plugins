@@ -70,7 +70,7 @@ class JacocoHelperPlugin : Plugin<Project> {
             }
           }
 
-          plugins.withId("io.gatling") {
+          plugins.withId("io.quarkus") {
             val coverageDataElements = addJacocoConfigurations()
             coverageDataElements.configure {
               val jacocoFile = buildDir.resolve("jacoco-quarkus.exec")
