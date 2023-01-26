@@ -58,17 +58,26 @@ class SpotlessHelperPlugin : Plugin<Project> {
               }
             }
 
-            val srcMain = projectDir.resolve("src/main")
-            val srcTest = projectDir.resolve("src/test")
+            val dirsInSrc = projectDir.resolve("src").listFiles()
+            val sourceLangs =
+              if (dirsInSrc != null)
+                dirsInSrc
+                  .filter { f -> f.isDirectory }
+                  .map { f -> f.listFiles() }
+                  .filterNotNull()
+                  .flatMap { l -> l.filter { f -> f.isDirectory } }
+                  .map { f -> f.name }
+                  .distinct()
+              else listOf()
 
-            if (srcMain.resolve("antlr4").exists() || srcTest.resolve("antlr4").exists()) {
+            if (sourceLangs.contains("antlr4")) {
               antlr4 {
                 licenseHeaderFile(rootProject.file("codestyle/copyright-header-java.txt"))
                 target("src/**/antlr4/**")
                 targetExclude("build/**")
               }
             }
-            if (srcMain.resolve("java").exists() || srcTest.resolve("java").exists()) {
+            if (sourceLangs.contains("java")) {
               java {
                 googleJavaFormat(dependencyVersion("versionGoogleJavaFormat"))
                 licenseHeaderFile(rootProject.file("codestyle/copyright-header-java.txt"))
@@ -76,7 +85,7 @@ class SpotlessHelperPlugin : Plugin<Project> {
                 targetExclude("build/**")
               }
             }
-            if (srcMain.resolve("scala").exists() || srcTest.resolve("scala").exists()) {
+            if (sourceLangs.contains("scala")) {
               scala {
                 scalafmt()
                 licenseHeaderFile(
@@ -87,7 +96,7 @@ class SpotlessHelperPlugin : Plugin<Project> {
                 targetExclude("buildSrc/build/**")
               }
             }
-            if (srcMain.resolve("kotlin").exists() || srcTest.resolve("kotlin").exists()) {
+            if (sourceLangs.contains("kotlin")) {
               kotlin {
                 ktfmt().googleStyle()
                 licenseHeaderFile(rootProject.file("codestyle/copyright-header-java.txt"), "$")
