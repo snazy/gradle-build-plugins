@@ -60,7 +60,6 @@ listOf(
     "jandex",
     "jacoco",
     "reflection-config",
-    "smallrye-openapi",
     "spotless",
     "dependency-declarations"
   )

@@ -33,7 +33,6 @@ val versionIdeaExtPlugin = dependencyVersion("versionIdeaExtPlugin")
 val versionJandex = "3.0.5"
 val versionJandexPlugin = "1.86"
 val versionShadowPlugin = "7.1.2"
-val versionSmallryeOpenApi = "3.1.2"
 val versionSpotlessPlugin = dependencyVersion("versionSpotlessPlugin")
 
 mapOf(
@@ -41,8 +40,7 @@ mapOf(
     "versionErrorPronePlugin" to versionErrorPronePlugin,
     "versionJandex" to versionJandex,
     "versionJandexPlugin" to versionJandexPlugin,
-    "versionShadowPlugin" to versionShadowPlugin,
-    "versionSmallryeOpenApi" to versionSmallryeOpenApi
+    "versionShadowPlugin" to versionShadowPlugin
   )
   .forEach { (k, v) -> rootProject.extra[k] = v }
 
@@ -60,15 +58,7 @@ dependencies {
 project(":dependency-declarations") {
   this.buildDir = file(rootProject.buildDir.resolve("dependency-declarations"))
   apply { plugin("java-platform") }
-  dependencies {
-    constraints {
-      api("org.ow2.asm:asm:$versionAsm")
-      api("io.smallrye:smallrye-open-api-core:$versionSmallryeOpenApi")
-      api("io.smallrye:smallrye-open-api-jaxrs:$versionSmallryeOpenApi")
-      api("io.smallrye:smallrye-open-api-spring:$versionSmallryeOpenApi")
-      api("io.smallrye:smallrye-open-api-vertx:$versionSmallryeOpenApi")
-    }
-  }
+  dependencies { constraints { api("org.ow2.asm:asm:$versionAsm") } }
 }
 
 javaPlatform { allowDependencies() }
