@@ -32,15 +32,9 @@ gradlePlugin {
       displayName = "Errorprone helper"
       description = "Applies errorprone rules based on a configuration file, for projectnessie."
       implementationClass = "org.projectnessie.buildtools.errorprone.ErrorproneHelperPlugin"
+      tags.addAll("projectnessie", "errorprone")
     }
   }
-}
-
-pluginBundle {
-  vcsUrl = "https://github.com/projectnessie/nessie/"
-  website = "https://github.com/projectnessie/nessie/"
-  description = "Applies errorprone rules based on a configuration file, for projectnessie."
-  tags = setOf("projectnessie", "errorprone")
 }
 
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }

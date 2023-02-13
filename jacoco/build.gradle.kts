@@ -26,21 +26,16 @@ gradlePlugin {
       displayName = "Jacoco Helper"
       description = "Jacoco helper plugin for individual projects."
       implementationClass = "org.projectnessie.buildtools.jacoco.JacocoHelperPlugin"
+      tags.addAll("projectnessie", "jacoco", "code-coverage")
     }
     create("jacoco-aggregator") {
       id = "org.projectnessie.buildsupport.jacoco-aggregator"
       displayName = "Jacoco Aggregator Helper"
       description = "Jacoco helper plugin for the aggregating project."
       implementationClass = "org.projectnessie.buildtools.jacoco.JacocoAggregatorHelperPlugin"
+      tags.addAll("projectnessie", "jacoco", "code-coverage")
     }
   }
-}
-
-pluginBundle {
-  vcsUrl = "https://github.com/projectnessie/nessie/"
-  website = "https://github.com/projectnessie/nessie/"
-  description = "Jacoco helper plugin that allows aggregation of all code coverage reports."
-  tags = setOf("projectnessie", "jacoco", "code-coverage")
 }
 
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }

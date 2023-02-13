@@ -32,15 +32,9 @@ gradlePlugin {
       displayName = "Spotless Helper"
       description = "Apply projectnessie specific spotless configurations"
       implementationClass = "org.projectnessie.buildtools.spotless.SpotlessHelperPlugin"
+      tags.addAll("projectnessie", "spotless")
     }
   }
-}
-
-pluginBundle {
-  vcsUrl = "https://github.com/projectnessie/nessie/"
-  website = "https://github.com/projectnessie/nessie/"
-  description = "Apply projectnessie specific spotless configurations"
-  tags = setOf("projectnessie", "spotless")
 }
 
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }

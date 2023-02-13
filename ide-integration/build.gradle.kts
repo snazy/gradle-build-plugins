@@ -32,15 +32,9 @@ gradlePlugin {
       displayName = "IDE Integration"
       description = "Projectnessie specific plugin to apply IntelliJ settings."
       implementationClass = "org.projectnessie.buildtools.ideintegration.IdeIntegrationPlugin"
+      tags.addAll("projectnessie", "IntelliJ")
     }
   }
-}
-
-pluginBundle {
-  vcsUrl = "https://github.com/projectnessie/nessie/"
-  website = "https://github.com/projectnessie/nessie/"
-  description = "Projectnessie specific plugin to apply IntelliJ settings."
-  tags = setOf("projectnessie", "IntelliJ")
 }
 
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }

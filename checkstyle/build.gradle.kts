@@ -30,11 +30,4 @@ gradlePlugin {
   }
 }
 
-pluginBundle {
-  vcsUrl = "https://github.com/projectnessie/nessie/"
-  website = "https://github.com/projectnessie/nessie/"
-  description = "Applies checkstyle rules, adds dependsOn-wiring for Quarkus + Jandex"
-  tags = setOf("projectnessie", "checkstyle")
-}
-
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }

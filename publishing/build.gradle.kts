@@ -32,15 +32,9 @@ gradlePlugin {
       displayName = "Publishing Helper"
       description = "Applies projectnessie specific maven-publishing configurations and tweaks"
       implementationClass = "org.projectnessie.buildtools.publishing.PublishingHelperPlugin"
+      tags.addAll("projectnessie", "maven", "pom")
     }
   }
-}
-
-pluginBundle {
-  vcsUrl = "https://github.com/projectnessie/nessie/"
-  website = "https://github.com/projectnessie/nessie/"
-  description = "Applies projectnessie specific maven-publishing configurations and tweaks"
-  tags = setOf("projectnessie", "maven", "pom")
 }
 
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }

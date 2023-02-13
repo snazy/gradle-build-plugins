@@ -129,10 +129,11 @@ allprojects {
             val nessieRepoName = "gradle-build-plugins"
 
             if (mavenPublication.name == "pluginMaven") {
-              val pluginBundle =
-                project.extensions.getByType<com.gradle.publish.PluginBundleExtension>()
+              val pluginBundle = project.extensions.getByType<GradlePluginDevelopmentExtension>()
               name.set(project.name)
-              description.set(pluginBundle.description)
+              pluginBundle.plugins.stream().findFirst().ifPresent { plugin ->
+                description.set(plugin.description)
+              }
             }
 
             inceptionYear.set("2022")

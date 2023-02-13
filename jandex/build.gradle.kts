@@ -31,16 +31,9 @@ gradlePlugin {
       description =
         "Projectnessie helper plugin to apply the Jandex plugin with an externally configured version"
       implementationClass = "org.projectnessie.buildtools.jandex.JandexHelperPlugin"
+      tags.addAll("projectnessie", "jandex")
     }
   }
-}
-
-pluginBundle {
-  vcsUrl = "https://github.com/projectnessie/nessie/"
-  website = "https://github.com/projectnessie/nessie/"
-  description =
-    "Projectnessie helper plugin to apply the Jandex plugin with an externally configured version"
-  tags = setOf("projectnessie", "jandex")
 }
 
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }

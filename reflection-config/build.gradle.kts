@@ -29,15 +29,9 @@ gradlePlugin {
       description =
         "Generates reflection-config.json configs for all classes for GraalVM native images"
       implementationClass = "org.projectnessie.buildtools.reflectionconfig.ReflectionConfigPlugin"
+      tags.addAll("projectnessie", "graal", "native")
     }
   }
-}
-
-pluginBundle {
-  vcsUrl = "https://github.com/projectnessie/nessie/"
-  website = "https://github.com/projectnessie/nessie/"
-  description = "Generates reflection-config.json configs for all classes for GraalVM native images"
-  tags = setOf("projectnessie", "graal", "native")
 }
 
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }
