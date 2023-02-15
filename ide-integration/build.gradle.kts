@@ -35,6 +35,8 @@ gradlePlugin {
       tags.addAll("projectnessie", "IntelliJ")
     }
   }
+  vcsUrl.set("https://github.com/projectnessie/nessie/")
+  website.set("https://github.com/projectnessie/nessie/")
 }
 
 kotlinDslPluginOptions { jvmTarget.set(JavaVersion.VERSION_11.toString()) }
