@@ -20,7 +20,7 @@ if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
 
 pluginManagement {
   val versionIdeaExtPlugin = "1.1.7"
-  val versionSpotlessPlugin = "6.15.0"
+  val versionSpotlessPlugin = "6.16.0"
 
   // Cannot use a settings-script global variable/value, so pass the 'versions' Properties via
   // settings.extra around.
