@@ -52,15 +52,6 @@ gradle.rootProject {
   versions.forEach { k, v -> prj.extra[k.toString()] = v }
 }
 
-listOf(
-    "errorprone",
-    "checkstyle",
-    "ide-integration",
-    "publishing",
-    "jandex",
-    "jacoco",
-    "reflection-config",
-    "spotless",
-    "dependency-declarations"
-  )
-  .forEach { include(it) }
+include("reflection-config")
+
+include("jacoco")

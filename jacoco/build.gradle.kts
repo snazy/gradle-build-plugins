@@ -16,7 +16,7 @@
 
 plugins {
   `kotlin-dsl`
-  id("com.gradle.plugin-publish")
+  alias(libs.plugins.gradle.publish.plugin)
 }
 
 gradlePlugin {

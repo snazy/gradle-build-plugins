@@ -16,10 +16,10 @@
 
 plugins {
   `kotlin-dsl`
-  id("com.gradle.plugin-publish")
+  alias(libs.plugins.gradle.publish.plugin)
 }
 
-dependencies { implementation("org.ow2.asm:asm:${dependencyVersion("versionAsm")}") }
+dependencies { implementation(libs.asm) }
 
 gradlePlugin {
   plugins {
