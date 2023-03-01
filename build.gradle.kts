@@ -32,7 +32,7 @@ val versionErrorPronePlugin = "3.0.1"
 val versionIdeaExtPlugin = dependencyVersion("versionIdeaExtPlugin")
 val versionJandex = "3.0.5"
 val versionJandexPlugin = "1.86"
-val versionShadowPlugin = "8.0.0"
+val versionShadowPlugin = "8.1.0"
 val versionSpotlessPlugin = dependencyVersion("versionSpotlessPlugin")
 
 mapOf(
@@ -48,7 +48,7 @@ dependencies {
   constraints {
     api("com.diffplug.spotless:spotless-plugin-gradle:$versionSpotlessPlugin")
     api("com.github.vlsi.gradle:jandex-plugin:$versionJandexPlugin")
-    api("gradle.plugin.com.github.johnrengelman:shadow:$versionShadowPlugin")
+    api("com.github.johnrengelman:shadow:$versionShadowPlugin")
     api("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext:$versionIdeaExtPlugin")
     api("net.ltgt.gradle:gradle-errorprone-plugin:$versionErrorPronePlugin")
     api("org.jboss:jandex:$versionJandex")

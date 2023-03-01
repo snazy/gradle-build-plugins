@@ -20,9 +20,7 @@ plugins {
 }
 
 dependencies {
-  implementation(
-    "gradle.plugin.com.github.johnrengelman:shadow:${dependencyVersion("versionShadowPlugin")}"
-  )
+  implementation("com.github.johnrengelman:shadow:${dependencyVersion("versionShadowPlugin")}")
 }
 
 gradlePlugin {
