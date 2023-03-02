@@ -18,8 +18,8 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.diffplug.gradle.spotless.SpotlessPlugin
 
 plugins {
-  id("com.diffplug.spotless")
-  id("io.github.gradle-nexus.publish-plugin")
+  alias(libs.plugins.spotless)
+  alias(libs.plugins.gradle.nexus.publish)
 }
 
 val projectVersion = file("version.txt").readText().trim()

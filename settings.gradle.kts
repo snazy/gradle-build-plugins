@@ -19,24 +19,6 @@ if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
 }
 
 pluginManagement {
-  val versionIdeaExtPlugin = "1.1.7"
-  val versionSpotlessPlugin = "6.16.0"
-
-  // Cannot use a settings-script global variable/value, so pass the 'versions' Properties via
-  // settings.extra around.
-  val versions = java.util.Properties()
-  settings.extra["nessieBuildTools.versions"] = versions
-
-  plugins {
-    id("com.gradle.plugin-publish") version "1.1.0"
-    id("com.diffplug.spotless") version versionSpotlessPlugin
-    id("io.github.gradle-nexus.publish-plugin") version "1.2.0"
-    id("org.jetbrains.gradle.plugin.idea-ext") version versionIdeaExtPlugin
-
-    versions["versionIdeaExtPlugin"] = versionIdeaExtPlugin
-    versions["versionSpotlessPlugin"] = versionSpotlessPlugin
-  }
-
   repositories {
     mavenCentral() // prefer Maven Central, in case Gradle's repo has issues
     gradlePluginPortal()
@@ -44,12 +26,6 @@ pluginManagement {
       mavenLocal()
     }
   }
-}
-
-gradle.rootProject {
-  val prj = this
-  val versions = settings.extra["nessieBuildTools.versions"] as java.util.Properties
-  versions.forEach { k, v -> prj.extra[k.toString()] = v }
 }
 
 include("reflection-config")
