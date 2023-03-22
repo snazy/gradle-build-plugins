@@ -16,7 +16,8 @@
 
 package org.projectnessie.buildtools.reflectionconfig
 
-import org.gradle.api.Project
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 
 /**
  * Configuration that specifies which classes shall be mentioned in generated reflection-config.json
@@ -32,21 +33,30 @@ import org.gradle.api.Project
  * Note that the plugin scans the classes using "asm" and does not consider any indirect superclass
  * nor does it consider any implicitly implementated interface.
  */
-open class ReflectionConfigExtension(project: Project) {
+interface ReflectionConfigExtension {
   /**
    * A superclass must match one of these regular expressions. If this list is empty, all
    * superclasses will match.
    */
-  val classExtendsPatterns = project.objects.listProperty(String::class.java)
+  val classExtendsPatterns: ListProperty<String>
 
   /**
    * Directly implemented interfaces must match one of these regular expressions. If this list is
    * empty, the class' directly implemented interfaces are not considered.
    */
-  val classImplementsPatterns = project.objects.listProperty(String::class.java)
+  val classImplementsPatterns: ListProperty<String>
 
   /**
    * Resolvable configuration(s) that should be scanned for classes matching the patterns as well.
    */
-  val includeConfigurations = project.objects.listProperty(String::class.java)
+  val includeConfigurations: ListProperty<String>
+
+  /**
+   * Defines a map of regex patterns and replacements to mutate the class name that appears in the
+   * generated `reflection-config.json`.
+   *
+   * When the class relocations, for example via the shadow Gradle plugin, happen, the generated
+   * `reflection-config.json` should also reference the relocated class names.
+   */
+  val relocations: MapProperty<String, String>
 }

@@ -31,7 +31,7 @@ class ReflectionConfigPlugin : Plugin<Project> {
     project.run {
       plugins.apply(JavaLibraryPlugin::class.java)
 
-      extensions.create("reflectionConfig", ReflectionConfigExtension::class.java, this)
+      extensions.create("reflectionConfig", ReflectionConfigExtension::class.java)
 
       configureFor(SourceSet.MAIN_SOURCE_SET_NAME, this)
       configureFor(SourceSet.TEST_SOURCE_SET_NAME, this)
@@ -59,6 +59,7 @@ class ReflectionConfigPlugin : Plugin<Project> {
           classExtendsPatterns.set(e.classExtendsPatterns)
           classImplementsPatterns.set(e.classImplementsPatterns)
           includeConfigurations.set(e.includeConfigurations)
+          relocations.set(e.relocations)
 
           dependsOn(compileJava)
         }

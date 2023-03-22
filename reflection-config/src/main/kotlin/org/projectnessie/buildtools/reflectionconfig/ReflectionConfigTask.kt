@@ -48,14 +48,18 @@ open class ReflectionConfigTask : DefaultTask() {
 
   @Input val classImplementsPatterns = project.objects.listProperty(String::class.java)
 
-  @Input val setName = project.objects.property(String::class.java)
-
   @Input var includeConfigurations = project.objects.listProperty(String::class.java)
+
+  @Input var relocations = project.objects.mapProperty(String::class.java, String::class.java)
+
+  @Input val setName = project.objects.property(String::class.java)
 
   @TaskAction
   fun generateReflectionConfig() {
     val extPats = classExtendsPatterns.get().map { s -> Pattern.compile(s) }.toList()
     val implPats = classImplementsPatterns.get().map { s -> Pattern.compile(s) }.toList()
+    val relocations =
+      relocations.get().entries.associate { e -> Pattern.compile("^${e.key}(.*)") to e.value }
 
     val baseDir =
       outputDirectory
@@ -115,7 +119,7 @@ open class ReflectionConfigTask : DefaultTask() {
       .writeText(
         (dependenciesStream + classFolderStream).joinToString(",\n", "[\n", "\n]") { clsName ->
           """  {
-              |    "name" : "$clsName",
+              |    "name" : "${relocatedClass(clsName, relocations)}",
               |    "allDeclaredConstructors" : true,
               |    "allPublicConstructors" : true,
               |    "allDeclaredMethods" : true,
@@ -126,6 +130,16 @@ open class ReflectionConfigTask : DefaultTask() {
             .trimMargin()
         }
       )
+  }
+
+  private fun relocatedClass(clsName: String, relocations: Map<Pattern, String>): String {
+    for (e in relocations.entries) {
+      val m = e.key.matcher(clsName)
+      if (m.matches()) {
+        return m.replaceFirst(e.value)
+      }
+    }
+    return clsName
   }
 
   private fun processClassFile(
