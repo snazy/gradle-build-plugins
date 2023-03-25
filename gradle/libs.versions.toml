@@ -1,5 +1,5 @@
 [libraries]
-asm = { module = "org.ow2.asm:asm", version = "9.4" }
+asm = { module = "org.ow2.asm:asm", version = "9.5" }
 
 [plugins]
 gradle-publish-plugin = { id = "com.gradle.plugin-publish", version = "1.1.0" }
