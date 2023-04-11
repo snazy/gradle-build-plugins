@@ -19,10 +19,12 @@ package org.projectnessie.buildtools.reflectionconfig
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
+import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.kotlin.dsl.provideDelegate
 
 /** Generates `reflection-config.json` files from compiled classes. */
 @Suppress("unused")
@@ -43,23 +45,44 @@ class ReflectionConfigPlugin : Plugin<Project> {
         val dirName = project.buildDir.resolve("generated/resource/reflect-conf/$sourceSetName")
         resources.srcDir(dirName)
 
+        val e = project.extensions.getByType(ReflectionConfigExtension::class.java)
         val compileJava = tasks.named(compileJavaTaskName, JavaCompile::class.java)
+
+        val allFiles =
+          project.objects
+            .fileCollection()
+            .from(
+              e.includeConfigurations.flatMap { configNames ->
+                provider {
+                  configNames
+                    .map { c ->
+                      val config = project.configurations.getByName(c)
+
+                      val dependencies: DependencySet = config.dependencies
+                      config.fileCollection(*dependencies.toTypedArray())
+                    }
+                    .reduce { x, y -> x.plus(y) }
+                }
+              }
+            )
+
         val genRefCfg =
           tasks.register(
             getTaskName("generate", "reflectionConfig"),
-            ReflectionConfigTask::class.java
+            ReflectionConfigTask::class.java,
+            e.classExtendsPatterns,
+            e.classImplementsPatterns,
+            allFiles,
+            e.relocations
           )
         genRefCfg.configure {
-          val e = project.extensions.getByType(ReflectionConfigExtension::class.java)
-
           setName.set(sourceSetName)
           classesFolder.set(compileJava.get().destinationDirectory)
           outputDirectory.set(file(dirName))
 
-          classExtendsPatterns.set(e.classExtendsPatterns)
-          classImplementsPatterns.set(e.classImplementsPatterns)
-          includeConfigurations.set(e.includeConfigurations)
-          relocations.set(e.relocations)
+          projectGroup.convention(provider { project.group.toString() })
+          projectName.convention(provider { project.name })
+          projectVersion.convention(provider { project.version.toString() })
 
           dependsOn(compileJava)
         }

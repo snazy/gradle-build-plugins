@@ -25,9 +25,8 @@ gradlePlugin {
   plugins {
     create("reflectionconfig") {
       id = "org.projectnessie.buildsupport.reflectionconfig"
-      displayName = "Reflection-config generator"
-      description =
-        "Generates reflection-config.json configs for all classes for GraalVM native images"
+      displayName = "Reflection-config JSON generator"
+      description = "Generates reflection-config.json configs for GraalVM native images"
       implementationClass = "org.projectnessie.buildtools.reflectionconfig.ReflectionConfigPlugin"
       tags.addAll("projectnessie", "graal", "native")
     }

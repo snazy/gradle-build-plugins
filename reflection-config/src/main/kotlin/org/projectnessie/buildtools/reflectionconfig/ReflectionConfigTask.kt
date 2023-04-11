@@ -22,8 +22,14 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.util.jar.JarInputStream
 import java.util.regex.Pattern
+import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -37,22 +43,25 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
 @CacheableTask
-open class ReflectionConfigTask : DefaultTask() {
-  @InputFiles
-  @PathSensitive(PathSensitivity.RELATIVE)
-  val classesFolder = project.objects.directoryProperty()
+abstract class ReflectionConfigTask
+@Inject
+constructor(
+  @Input val classExtendsPatterns: ListProperty<String>,
+  @Input val classImplementsPatterns: ListProperty<String>,
+  @InputFiles @PathSensitive(PathSensitivity.RELATIVE) val allFiles: FileCollection,
+  @Input val relocations: MapProperty<String, String>
+) : DefaultTask() {
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  abstract val classesFolder: DirectoryProperty
 
-  @OutputDirectory val outputDirectory = project.objects.directoryProperty()
+  @get:OutputDirectory abstract val outputDirectory: DirectoryProperty
 
-  @Input val classExtendsPatterns = project.objects.listProperty(String::class.java)
+  @get:Input abstract val setName: Property<String>
 
-  @Input val classImplementsPatterns = project.objects.listProperty(String::class.java)
-
-  @Input var includeConfigurations = project.objects.listProperty(String::class.java)
-
-  @Input var relocations = project.objects.mapProperty(String::class.java, String::class.java)
-
-  @Input val setName = project.objects.property(String::class.java)
+  @get:Input abstract val projectGroup: Property<String>
+  @get:Input abstract val projectName: Property<String>
+  @get:Input abstract val projectVersion: Property<String>
 
   @TaskAction
   fun generateReflectionConfig() {
@@ -62,10 +71,7 @@ open class ReflectionConfigTask : DefaultTask() {
       relocations.get().entries.associate { e -> Pattern.compile("^${e.key}(.*)") to e.value }
 
     val baseDir =
-      outputDirectory
-        .get()
-        .file("META-INF/native-image/${project.group}/${project.name}/${setName.get()}")
-        .asFile
+      outputDirectory.get().file("META-INF/native-image/$projectGroup/$projectName/$setName").asFile
     if (!baseDir.isDirectory) {
       if (!baseDir.mkdirs()) {
         throw GradleException("Could not create directory '$baseDir'")
@@ -80,34 +86,26 @@ open class ReflectionConfigTask : DefaultTask() {
         .mapNotNull { file -> processClassFile(file, extPats, implPats) }
 
     val dependenciesStream =
-      includeConfigurations
-        .get()
-        .map { cfg -> project.configurations.getByName(cfg) }
-        .flatMap { cfg -> cfg.resolve() }
-        .flatMap { file ->
-          val classNames = mutableListOf<String>()
-          JarInputStream(FileInputStream(file.absoluteFile)).use {
-            while (true) {
-              val n = it.nextJarEntry ?: break
-              if (n.name.endsWith(".class")) {
-                val clsName = processClassFile(it, extPats, implPats)
-                if (clsName != null) {
-                  classNames.add(clsName)
-                }
+      allFiles.files.flatMap { file ->
+        val classNames = mutableListOf<String>()
+        JarInputStream(FileInputStream(file.absoluteFile)).use {
+          while (true) {
+            val n = it.nextJarEntry ?: break
+            if (n.name.endsWith(".class")) {
+              val clsName = processClassFile(it, extPats, implPats)
+              if (clsName != null) {
+                classNames.add(clsName)
               }
             }
           }
-          classNames
         }
-
-    val projectGroup = project.group
-    val projectName = project.name
-    val projectVersion = project.version
+        classNames
+      }
 
     baseDir
       .resolve("native-image.properties")
       .writeText(
-        "# This file is generated for ${projectGroup}:${projectName}:${projectVersion}.\n" +
+        "# This file is generated for $projectGroup:$projectName:$projectVersion.\n" +
           "# Contains classes \n" +
           "#   with superclass: ${extPats.joinToString(",\n#     ", "\n#     ")}\n" +
           "#   implementing interfaces: ${implPats.joinToString(",\n#     ", "\n#     ")}\n" +
