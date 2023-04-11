@@ -71,7 +71,10 @@ constructor(
       relocations.get().entries.associate { e -> Pattern.compile("^${e.key}(.*)") to e.value }
 
     val baseDir =
-      outputDirectory.get().file("META-INF/native-image/$projectGroup/$projectName/$setName").asFile
+      outputDirectory
+        .get()
+        .file("META-INF/native-image/${projectGroup.get()}/${projectName.get()}/${setName.get()}")
+        .asFile
     if (!baseDir.isDirectory) {
       if (!baseDir.mkdirs()) {
         throw GradleException("Could not create directory '$baseDir'")
@@ -105,7 +108,7 @@ constructor(
     baseDir
       .resolve("native-image.properties")
       .writeText(
-        "# This file is generated for $projectGroup:$projectName:$projectVersion.\n" +
+        "# This file is generated for ${projectGroup.get()}:${projectName.get()}:${projectVersion.get()}.\n" +
           "# Contains classes \n" +
           "#   with superclass: ${extPats.joinToString(",\n#     ", "\n#     ")}\n" +
           "#   implementing interfaces: ${implPats.joinToString(",\n#     ", "\n#     ")}\n" +
