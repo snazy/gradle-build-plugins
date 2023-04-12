@@ -24,7 +24,6 @@ import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.kotlin.dsl.provideDelegate
 
 /** Generates `reflection-config.json` files from compiled classes. */
 @Suppress("unused")

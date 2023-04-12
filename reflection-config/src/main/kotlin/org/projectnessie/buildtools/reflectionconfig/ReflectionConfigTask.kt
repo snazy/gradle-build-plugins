@@ -27,6 +27,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
@@ -49,7 +50,8 @@ constructor(
   @Input val classExtendsPatterns: ListProperty<String>,
   @Input val classImplementsPatterns: ListProperty<String>,
   @InputFiles @PathSensitive(PathSensitivity.RELATIVE) val allFiles: FileCollection,
-  @Input val relocations: MapProperty<String, String>
+  @Input val relocations: MapProperty<String, String>,
+  private val fileSystemOps: FileSystemOperations
 ) : DefaultTask() {
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -70,11 +72,17 @@ constructor(
     val relocations =
       relocations.get().entries.associate { e -> Pattern.compile("^${e.key}(.*)") to e.value }
 
+    val outputDir = outputDirectory.get()
+
     val baseDir =
-      outputDirectory
-        .get()
+      outputDir
         .file("META-INF/native-image/${projectGroup.get()}/${projectName.get()}/${setName.get()}")
         .asFile
+
+    logger.info("Generating reflection configuration in $baseDir")
+
+    fileSystemOps.delete { this.delete(outputDir) }
+
     if (!baseDir.isDirectory) {
       if (!baseDir.mkdirs()) {
         throw GradleException("Could not create directory '$baseDir'")
